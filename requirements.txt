@@ -1,2 +1,1 @@
-Django
-db-sqlite3
+Django==2
