@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>CyberFX Advisor Insights</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <a href="{% url 'index' %}"><img src="{% static 'images/back-button.png'%}" alt="" height="45px" width="45px" style="position:absolute; top:20px; left:20px;"></a>
+<div class="container mt-3">
+  <input id="livesearch" class="form-control mb-3" placeholder="Izlash" />
+</div>
+    <div class="container-fluid page-body-wrapper">
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title text-center">Advisors</h4>
+<!--                   <p class="card-description">
+                    Add class <code>.table-bordered</code>
+                  </p> -->
+                  <div class="table-responsive pt-3">
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>
+                            #
+                          </th>
+                          <th>
+                            EA
+                          </th>
+                          <th>
+                            Cyberspyde Review
+                          </th>
+                          <th>
+                            Lesson learned
+                          <th>
+                            Comments count
+                          </th>
+                          <th>
+                            Last updated
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody id="box">
+                      {% for item in advisors %}
+                        <tr>
+                          <td>
+                            {{item.id}}
+                          </td>
+                          <td>
+                            {% comment %} <a href="{% url 'editKnowledge' item.name %}">{{item.name}}</a> {% endcomment %}
+                          </td>
+                          <td>
+                            <div class="progress">
+                              <div class="progress-bar bg-success" role="progressbar" style="width: {{item.usability}}%" aria-valuenow="{{item.usability}}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </td>
+                          <td>
+                            {{item.data_count}} 
+                          </td>
+                          <td>
+                            {{item.last_updated}}
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+  <script src="{% static 'js/index.umd.js' %}"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+  <script>  
+PullToRefresh.init({
+    mainElement: 'body',
+    triggerElement: 'body',
+    onRefresh: function() { location.reload() }
+    });</script>
+
+<script>
+  data = "{{livesearchData}}";
+  name = "{{name}}";
+
+  console.log(name);
+  const rdata = JSON.parse(data.replace(/&quot;/g, '"'))
+  document.getElementById('livesearch').addEventListener('keyup', (e)=>{
+        box.innerHTML = ""
+        filteredArr = rdata.filter(info=> info['name'].includes(e.target.value))
+        console.log(filteredArr)
+        if (filteredArr.length > 0){
+            filteredArr.map(info=>{
+                box.innerHTML += `
+
+                        <tr>
+                          <td>
+                            ${info['id']}
+                          </td>
+                          <td>
+                            <a href="http://localhost:8000/edit/${info['name']}">${info['name']}</a>
+                          </td>
+                          <td>
+                            <div class="progress">
+                              <div class="progress-bar bg-success" role="progressbar" style="width: ${info['usability']}%" aria-valuenow="${info['usability']}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </td>
+                          <td>
+                            ${info['data_count']} 
+                          </td>
+                          <td>
+                            ${info['last_updated']}
+                          </td>
+                        </tr>
+                      `
+            })
+        } else {
+            box.innerHTML = "<b>Natija topilmadi...</b>"
+        }
+    })
+  </script>
+  
+
+  <script>
+    //Swite to get back
+    var start = null;
+    window.addEventListener("touchstart",function(event){
+      if(event.touches.length === 1){
+          //just one finger touched
+          start = event.touches.item(0).clientX;
+        }else{
+          //a second finger hit the screen, abort the touch
+          start = null;
+        }
+      });
+
+    window.addEventListener("touchend",function(event){
+    var offset = 100;//at least 100px are a swipe
+    if(start){
+      //the only finger that hit the screen left it
+      var end = event.changedTouches.item(0).clientX;
+
+      if(end > start + offset){
+       //a left -> right swipe
+      }
+      if(end < start - offset ){
+       //a right -> left swipe
+       console.log('swiped')
+      }
+    }
+  });
+  </script>
+
+</body>
+</html>

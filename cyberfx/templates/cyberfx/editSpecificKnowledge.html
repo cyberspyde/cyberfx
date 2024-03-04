@@ -1,0 +1,28 @@
+{% load static %}
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Ma'lumotlar ba'zasi</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <a href="javascript:history.back()"><img src="../../images/back-button.png" alt="" height="45px" width="45px" style="position:absolute; top:20px; left:20px;"></a>
+  <br><br><br>
+  <form action="" method="POST" enctype="multipart/form-data"> 
+      {% csrf_token %}
+      <p>Malumot</p>
+      {{form.content}}
+      <p>Kategoriya</p>
+      {{form.category}}
+        <div class="w-100 text-center mt-4">
+          <button type="submit" class="btn btn-primary btn-lg">Yaratish</button>
+        </div>
+        
+    </form>
+</body>
+
+  
+  
+</html>
