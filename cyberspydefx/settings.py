@@ -15,7 +15,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+staticFilesDir = BASE_DIR / 'cyberfx' / 'static'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -120,7 +120,7 @@ STATIC_URL = 'static/'
 
 #STATIC_ROOT = "D:\\Github\\Forex Expert Advisors Project\\cyberspydefx\\cyberfx\\assets"
 
-STATICFILES_DIRS = ["D:\\Github\\cyberfx\\cyberfx\\static"]
+STATICFILES_DIRS = [staticFilesDir]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
