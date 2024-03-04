@@ -1,2 +1,2 @@
-Django==5
+Django
 db-sqlite3
