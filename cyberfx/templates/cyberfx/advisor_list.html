@@ -39,9 +39,6 @@
                           <th>
                             Lesson learned
                           <th>
-                            Comments count
-                          </th>
-                          <th>
                             Last updated
                           </th>
                         </tr>
@@ -53,15 +50,17 @@
                             {{item.id}}
                           </td>
                           <td>
+                            {{item.ea_name}}
                             {% comment %} <a href="{% url 'editKnowledge' item.name %}">{{item.name}}</a> {% endcomment %}
                           </td>
                           <td>
-                            <div class="progress">
+                            {{item.personal_review}}
+                            {% comment %} <div class="progress">
                               <div class="progress-bar bg-success" role="progressbar" style="width: {{item.usability}}%" aria-valuenow="{{item.usability}}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
+                            </div> {% endcomment %}
                           </td>
                           <td>
-                            {{item.data_count}} 
+                            {{item.lessons_learned}} 
                           </td>
                           <td>
                             {{item.last_updated}}
@@ -91,45 +90,48 @@ PullToRefresh.init({
     });</script>
 
 <script>
-  data = "{{livesearchData}}";
-  name = "{{name}}";
+document.getElementById('livesearch').addEventListener('keyup', (e) => {
+  const searchTerm = e.target.value;
 
-  console.log(name);
-  const rdata = JSON.parse(data.replace(/&quot;/g, '"'))
-  document.getElementById('livesearch').addEventListener('keyup', (e)=>{
-        box.innerHTML = ""
-        filteredArr = rdata.filter(info=> info['name'].includes(e.target.value))
-        console.log(filteredArr)
-        if (filteredArr.length > 0){
-            filteredArr.map(info=>{
-                box.innerHTML += `
-
-                        <tr>
-                          <td>
-                            ${info['id']}
-                          </td>
-                          <td>
-                            <a href="http://localhost:8000/edit/${info['name']}">${info['name']}</a>
-                          </td>
-                          <td>
-                            <div class="progress">
-                              <div class="progress-bar bg-success" role="progressbar" style="width: ${info['usability']}%" aria-valuenow="${info['usability']}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                          </td>
-                          <td>
-                            ${info['data_count']} 
-                          </td>
-                          <td>
-                            ${info['last_updated']}
-                          </td>
-                        </tr>
-                      `
-            })
-        } else {
-            box.innerHTML = "<b>Natija topilmadi...</b>"
-        }
+  searchTimeout = setTimeout(() => {
+    fetch(`/search-advisors/?term=${searchTerm}`) 
+    .then(response => response.json())
+    .then(data => {
+      box.innerHTML = ""; 
+      if (data.length > 0) {
+          data.forEach(advisor => {
+              box.innerHTML += 
+              `  
+              <tr>
+              <td>
+              ${advisor.number}
+              </td>
+              <td>
+              <a href="http://localhost:8000/comment/${advisor.ea_name}">${advisor.ea_name}</a>
+              </td>
+              <td>
+              ${advisor.personal_review}} 
+              </td>
+              <td>
+              ${advisor.lessons_learned}
+              </td>
+              <td>
+              ${advisor.last_updated}
+              </td>
+              </tr>
+              `;
+          });
+      } else {
+          box.innerHTML = "<b>No results found...</b>";
+      }
     })
-  </script>
+    .catch(error => {
+        box.innerHTML = "<b>Error fetching during search.</b>"; 
+    });
+  });
+
+}, 500);
+</script>
   
 
   <script>

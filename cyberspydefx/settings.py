@@ -118,7 +118,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = ["D:\\Github\\Forex Expert Advisors Project\\cyberspydefx\\cyberfx\\assets"]
+#STATIC_ROOT = "D:\\Github\\Forex Expert Advisors Project\\cyberspydefx\\cyberfx\\assets"
+
+STATICFILES_DIRS = ["D:\\Github\\cyberfx\\cyberfx\\static"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
