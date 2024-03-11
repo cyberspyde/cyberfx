@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-!z9i9s1*wz@0&)9npvf8_@ojj2-8g124k)%a4l=i6*7-dc=+4*
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
+LOGIN_URL = '/cyberfx/login/'
 
 # Application definition
 
@@ -116,9 +116,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
-#STATIC_ROOT = "D:\\Github\\Forex Expert Advisors Project\\cyberspydefx\\cyberfx\\assets"
+STATIC_ROOT = "cyberfx"
 
 STATICFILES_DIRS = [staticFilesDir]
 

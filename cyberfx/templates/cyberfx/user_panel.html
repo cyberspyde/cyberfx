@@ -1,0 +1,76 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'fonts/icomoon/style.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    
+    <!-- Style -->
+    <link rel="stylesheet" href="{% static 'css/style-table.css' %}">
+
+    <title>User Panel</title>
+  </head>
+  <body>
+  
+
+  <div class="content">
+    
+    <div class="container">
+      <div class="d-flex justify-content-between">
+        <div>
+        <h2 class="">Welcome {{username}}, below, you can find your contributions</h2>
+        <span>To add more, go to advisors and select the one you want to review</span>
+        </div>
+        <div>
+        <a href="{% url 'advisors' %}" class="btn border-primary">Advisors</a>
+        <a href="{% url 'logout' %}" class="btn border-danger">Logout</a>
+        </div>
+      </div>
+      <div class="table-responsive mt-4">
+
+        <table class="table custom-table">
+          <thead>
+            <tr>
+              <th scope="col">EA Name</th>
+              <th scope="col">Review</th>
+              <th scope="col">Posted date</th>
+              <th scope="col">Approval</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for review in reviews|dictsortreversed:"posted_date" %}
+
+            <tr scope="row">
+                <td>{{review.advisor.ea_name}}</td>
+                <td>
+                {{review.comment}}
+                </td>
+                <td>{{review.posted_date}}</td>
+                <td>{{review.approved}}</td>
+            
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+
+    </div>
+
+  </div>
+    
+    <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/main-table.js' %}"></script>
+  </body>
+</html>

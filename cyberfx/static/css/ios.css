@@ -1,0 +1,11 @@
+
+.container { 
+background-color: white;  
+border-radius: 15px; 
+padding: 30px;
+margin-top: 80px; 
+box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1); /* Subtle box shadow */
+display: flex;
+align-items: center;
+height: calc(100vh - 80px); /* Roughly center vertically */
+}

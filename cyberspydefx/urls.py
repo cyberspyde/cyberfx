@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('cyberfx.urls'))  # Include the cyberfx app's URLs
+    path('', include('cyberfx.urls'))
+    
 ]

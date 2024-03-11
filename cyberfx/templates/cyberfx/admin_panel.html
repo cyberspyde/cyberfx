@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>CyberFX Advisor Insights</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<style>
+    body{
+        background: #f6f9fc;
+        margin-top:20px;}
+    /* booking */
+    
+    .bg-light-blue {
+        background-color: #e9f7fe !important;
+        color: #3184ae;
+        padding: 7px 18px;
+        border-radius: 4px;
+    }
+    
+    .bg-light-green {
+        background-color: rgba(40, 167, 69, 0.2) !important;
+        padding: 7px 18px;
+        border-radius: 4px;
+        color: #28a745 !important;
+    }
+    
+    .buttons-to-right {
+        position: absolute;
+        right: 0;
+        top: 40%;
+    }
+    
+    .btn-gray {
+        color: #666;
+        background-color: #eee;
+        padding: 7px 18px;
+        border-radius: 4px;
+    }
+    
+    .booking:hover .buttons-to-right .btn-gray {
+        opacity: 1;
+        transition: .3s;
+    }
+    
+    .buttons-to-right .btn-gray {
+        opacity: 0;
+        transition: .3s;
+    }
+    
+    .btn-gray:hover {
+        background-color: #36a3f5;
+        color: #fff;
+    }
+    
+    .booking {
+        margin-bottom: 30px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 30px;
+    }
+    
+    .booking:last-child {
+        margin-bottom: 0px;
+        border-bottom: none;
+        padding-bottom: 0px;
+    }
+    
+    @media screen and (max-width: 575px) {
+        .buttons-to-right {
+            top: 10%;
+        }
+        .buttons-to-right a {
+            display: block;
+            margin-bottom: 20px;
+        }
+        .buttons-to-right a:last-child {
+            margin-bottom: 0px;
+        }
+        .bg-light-blue,
+        .bg-light-green,
+        .btn-gray {
+            padding: 7px;
+        }
+    }
+    
+    .card {
+        margin-bottom: 20px;
+        background-color: #fff;
+        border-radius: 4px;
+        -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+        box-shadow: none;
+        border: none;
+        padding: 25px;
+    }
+    .mb-5, .my-5 {
+        margin-bottom: 3rem!important;
+    }
+    .msg-img {
+        margin-right: 20px;
+    }
+    .msg-img img {
+        width: 60px;
+        border-radius: 50%;
+    }
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+</style>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-white mb-5">
+                <div class="card-heading clearfix border-bottom mb-4">
+                    <h4 class="card-title">Booking Requests</h4>
+                    <a href="{% url 'logout' %}" class="btn btn-primary right">Log out</a>
+                    <a href="{% url 'approve_all' %}" class="btn btn-success right">Approve All</a>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for review in reviews %}
+                        <li class="position-relative booking">
+                            <div class="media">
+                                <div class="media-body">
+                                    <h5 class="mb-4">{{review.advisor.ea_name}} <span class="badge badge-primary mx-3">{{review.user.username}}</span><span class="badge badge-danger"></span></h5>
+                                    <div class="mb-3">
+                                        <span class="mr-2 d-block d-sm-inline-block mb-2 mb-sm-0">Post date:</span>
+                                        <span class="bg-light-blue">{{review.posted_date}}</span>
+                                    </div>
+                                    <div class="mb-5">
+                                        <span class="mr-2 d-block d-sm-inline-block mb-1 mb-sm-0">Comment: {{review.comment}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="buttons-to-right">
+                                <a href="#" class="btn-gray mr-2"><i class="far fa-times-circle mr-2"></i> Reject</a>
+                                <a href="#" class="btn-gray"><i class="far fa-check-circle mr-2"></i> Approve</a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+    
+                </div>
+            </div>
+    
+        </div>
+    </div>
+    </div>
+</body>

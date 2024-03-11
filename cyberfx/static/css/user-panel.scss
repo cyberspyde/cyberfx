@@ -1,0 +1,122 @@
+@import 'https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400';
+$primary-color: #314a9c;
+$primary-color-dark: darken( $primary-color, 10% );
+$primary-color-tint: lighten( $primary-color, 50% );
+$secondary-color: #f6414a;
+$primary-font: "Roboto Condensed", sans-serif;
+$black: #444;
+$white: #fff;
+$xs: 480px;
+$sm: 768px;
+$md: 992px;
+$lg: 1200px;
+
+
+* { box-sizing: border-box; }
+body {
+	background-color: $primary-color;
+	font-family: $primary-font;
+	font-size: 16px;
+	font-weight: 300;
+	line-height: 1.875em;
+}
+.container {
+	margin-top: 50px;
+	box-shadow: 10px 10px 0 $primary-color-dark;
+	background-color: $white;
+}
+
+// unimportant styles
+a {
+	border-bottom: 1px dotted;
+	color: $primary-color;
+	&:hover {
+		border-bottom: 1px solid;
+		text-decoration: none;
+		color: $primary-color-dark;
+	}
+}
+.header-6 {
+	display: block;
+	font-weight: 400;
+}
+.table {
+	line-height: 1.625em;
+	thead {
+		th {
+			border-top: 0;
+			border-color: $secondary-color;
+			font-weight: 400;
+		}
+	}
+	tbody {
+		th,
+		td {
+			border-top-color: $primary-color-tint;
+		}
+	}
+	th, td {
+		&:not(:first-child) {
+			text-align: right;
+		}
+	}
+}
+@media (max-width: $sm - 1) {
+	.table-responsive {
+		margin: 15px 0;
+		border: solid 1px $primary-color-tint;
+		.table {
+			min-width: 700px;
+		}
+	}
+}
+
+
+// the good stuff
+
+.table-collapse {
+	
+	.collapse-control {
+		cursor: pointer;
+		transition: 0.2s;
+		
+		&:not(.collapsed),
+		&:hover {
+			background-color: $primary-color-tint;
+			td {
+				border-top-color: $white;
+			}
+		}
+		
+		td {
+			&:first-child {
+				position: relative;
+				padding-left: 2.25em;
+				
+				&::before {
+					content: '👆';
+					position: absolute;
+					left: 0.75em;
+					transition: 0.35s;
+				}
+			}
+		}
+		
+		&.collapsed {
+			td {
+				&:first-child {
+					&::before {
+						transform: rotateX(180deg);
+					}
+				}
+			}
+		}
+	}
+	
+	.collapse-td {
+		padding-top: 0;
+		padding-bottom: 0;
+		border-top: 0;
+		background-color: $primary-color-tint;
+	}
+}

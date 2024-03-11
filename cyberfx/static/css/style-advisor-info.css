@@ -1,0 +1,44 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    background-color: #f0f0f5;
+}
+
+header {
+    background-color: #fff;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#comments {
+    padding: 20px;
+}
+
+.comment {
+    background-color: #fff;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+}
+
+.comment-meta {
+    color: #888;
+    font-size: 0.9em;
+}
+
+/* ... (Your existing styles) */
+
+#add-comment {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border-radius: 8px; 
+}
+
+#comment-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
