@@ -49,18 +49,18 @@ def search_advisors(request):
 @login_required
 def advisor_info(request, id):
     advisor = ExpertAdvisor.objects.get(id=id)
+    user = request.user
+
     if request.user.is_authenticated:
         if request.user.is_superuser:
             if request.method == 'POST':
                 user = request.user
                 comment = request.POST['comment']
-                print(comment)
-#                review.save(advisor=advisor, user=user, comment=comment, approved=True)
-                return redirect('login_function')
+                review = Review(advisor=advisor, user=user, comment=comment, approved=True)
+                review.save()
         else:
             if request.method == 'POST':
                 comment = request.POST['comment']
-                user = request.user
                 review = Review(advisor=advisor, user=user, comment=comment, approved=False)
                 review.save()
                 return redirect('login_function')
@@ -82,3 +82,27 @@ def login_function(request):
 
     else:
         return redirect('login')
+    
+def approve_review(request, id):
+    review = Review.objects.get(id=id)
+    review.approved = True
+    review.save()
+    return redirect('login_function')
+
+def reject_review(request, id):
+    review = Review.objects.get(id=id)
+    review.delete()
+    return redirect('login_function')
+
+def approve_all_reviews(request):
+    reviews = Review.objects.filter(approved=False)
+    for review in reviews:
+        review.approved = True
+        review.save()
+    return redirect('login_function')
+
+def reject_all_reviews(request):
+    reviews = Review.objects.filter(approved=False)
+    for review in reviews:
+        review.delete()
+    return redirect('login_function')

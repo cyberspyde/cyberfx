@@ -118,13 +118,14 @@
         <div class="col-md-12">
             <div class="card card-white mb-5">
                 <div class="card-heading clearfix border-bottom mb-4">
-                    <h4 class="card-title">Booking Requests</h4>
-                    <a href="{% url 'logout' %}" class="btn btn-primary right">Log out</a>
-                    <a href="{% url 'approve_all' %}" class="btn btn-success right">Approve All</a>
-                </div>
+                <a href="{% url 'logout' %}" class="btn btn-primary right">Log out</a>
+                <a href="{% url 'approve_all_reviews' %}" class="btn btn-success right">Approve All</a>
+                <a href="{% url 'reject_all_reviews' %}" class="btn btn-danger right">Reject All</a>
+                </div>             
+
                 <div class="card-body">
                     <ul class="list-unstyled">
-                        {% for review in reviews %}
+                        {% for review in reviews|dictsortreversed:"posted_date" %}
                         <li class="position-relative booking">
                             <div class="media">
                                 <div class="media-body">
@@ -139,8 +140,8 @@
                                 </div>
                             </div>
                             <div class="buttons-to-right">
-                                <a href="#" class="btn-gray mr-2"><i class="far fa-times-circle mr-2"></i> Reject</a>
-                                <a href="#" class="btn-gray"><i class="far fa-check-circle mr-2"></i> Approve</a>
+                                <a href="{% url 'reject_review' review.id %}" class="btn-gray mr-2"><i class="far fa-times-circle mr-2"></i> Reject</a>
+                                <a href="{% url 'approve_review' review.id %}" class="btn-gray"><i class="far fa-check-circle mr-2"></i> Approve</a>
                             </div>
                         </li>
                         {% endfor %}

@@ -6,13 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'css/style-advisor-info.css' %}"> 
+    {% comment %} <link rel="stylesheet" href="{% static 'css/style-advisor-info.css' %}">  {% endcomment %}
+    <link rel="stylesheet" href="{% static 'fonts/icomoon/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style-advisors.css' %}">
     <title>Expert Advisor Reviews</title>
+
+<style>
+
+  #comment-input {
+    background-color: black; 
+    color: white;      
+  }
+
+  #comment-input::placeholder {
+    color: white;       
+  }
+  body {
+    color: white;
+  }
+  #comments, card-body, card {
+    background: #25252b;
+    color: #25252b;
+    background-color: #25252b;
+  }
+</style>
 </head>
 <body>
-  <header class="container mt-4"> 
+  <header class="container mt-4">       
     <div class="text-center">
-        <h1>Expert Advisor: <span id="ea-name">{{advisor.ea_name}}</span></h1> 
+        <h1><a href="{% url 'advisors' %}"><img src="{% static 'images/back-button.png'%}" alt="" height="40px" width="30px"></a> Expert Advisor: <span id="ea-name">{{advisor.ea_name}}</span></h1> 
     </div>
     <div class="">
     <p class="position-absolute top-0 end-0 m-1">Username: <span id="username">{{username}}</span></p> 
@@ -22,37 +46,48 @@
 <section id="add-comment" class="container mt-4 text-center">
   <form method="POST">
   {% csrf_token %}
-  <h2>Leave Your Review</h2>
   <input type="text" id="comment-input" name="comment" class="form-control" placeholder="Write your review here...">
-  <button type="submit" class="btn btn-primary mt-3 text-center">Submit Review</button> 
+  <button type="submit" class="btn btn-dark mt-3 text-center">Submit Review</button> 
   </form>
 </section>
 
 
 <section id="comments" class="container mt-4"> 
     <h2>Reviews</h2>
-    {% for review in reviews %}
-    <div class="card mb-3"> 
-        <div class="card-body">
+    {% for review in reviews|dictsortreversed:"posted_date" %}
+    <div class="border-left border-light" id="randomized"> 
             <p class="text-muted mb-1">{{username}} | {{review.posted_date}}</p> 
             <p>{{review.comment}}</p>
-        </div>
     </div>
+    <br>
     {% endfor %}
-    <div class="card mb-3"> 
-      <div class="card-body">
+    <div class="border-left border-light" id="randomized"> 
           <p class="text-muted mb-1">Admin | {{advisor.last_updated}}</p> 
           <p>{{advisor.personal_review}}</p>
-      </div>
   </div>
 </section>
-
-    <footer>
-        </footer>
 </body>
+
+<script>
+// Select the container
+const container = document.querySelectorAll("#randomized"); 
+
+// Select all the content elements inside the container (you'll need to adjust your selector here if necessary)
+
+// Function to generate a random margin
+function getRandomMargin() {
+  return Math.floor(Math.random() * 4) + 2; // Generates numbers between 2 and 5
+}
+console.log(container)
+
+container.forEach((container) => {
+  const randomMargin = getRandomMargin();
+  container.classList.add(`p-${randomMargin}`); 
+});
+
+</script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>"
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 </html>

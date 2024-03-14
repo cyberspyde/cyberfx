@@ -10,9 +10,8 @@ urlpatterns = [
     path('cyberfx/login_function/', views.login_function, name='login_function'),
     path('cyberfx/login/', views.login_view, name='login'),
     path('cyberfx/logout/', views.logout_view, name='logout'),
-    # path('api/new_customer', views.new_customer, name='new_customer'),
-    # path('api/customer_detail/<int:ticket_number>', views.CustomerViewAPIView.as_view()),
-    # path('api/latestcustomers', views.LatestCustomers.as_view()),
-    # path('api/generatepdf/<int:ticket_number>', views.generatePDF),
-    # path('api/process_data/<int:ticket_number>', views.process_data)
+    path('cyberfx/approve-review/<int:id>', views.approve_review, name='approve_review'),
+    path('cyberfx/reject-review/<int:id>', views.reject_review, name='reject_review'),
+    path('cyberfx/approve-all-reviews/', views.approve_all_reviews, name='approve_all_reviews'),
+    path('cyberfx/reject-all-reviews/', views.reject_all_reviews, name='reject_all_reviews'),
 ]
