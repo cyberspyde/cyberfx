@@ -42,7 +42,8 @@
             <tr>
               <th scope="col">EA Name</th>
               <th scope="col">Review</th>
-              <th scope="col">Posted date</th>
+              <th scope="col">EA Category</th>
+              <th scope="col">Posted date</th>              
               <th scope="col">Approval</th>
             </tr>
           </thead>
@@ -51,11 +52,22 @@
 
             <tr scope="row">
                 <td>{{review.advisor.ea_name}}</td>
-                <td>
-                {{review.comment}}
-                </td>
+                <td>{{review.comment}}</td>
+                <td>{{review.advisor.category}}
                 <td>{{review.posted_date}}</td>
                 <td>{{review.approved}}</td>
+            </tr>
+            {% endfor %}
+
+            {% for advisor in advisors %}
+            <tr scope="row">
+                <td>{{advisor.ea_name}}</td>
+                <td>
+                {{advisor.personal_review}}
+                </td>
+                <td>{{advisor.category}}</td>
+                <td></td>
+                <td>{{advisor.approved}}</td>
             
             </tr>
             {% endfor %}

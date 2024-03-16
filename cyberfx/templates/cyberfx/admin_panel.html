@@ -119,8 +119,10 @@
             <div class="card card-white mb-5">
                 <div class="card-heading clearfix border-bottom mb-4">
                 <a href="{% url 'logout' %}" class="btn btn-primary right">Log out</a>
-                <a href="{% url 'approve_all_reviews' %}" class="btn btn-success right">Approve All</a>
-                <a href="{% url 'reject_all_reviews' %}" class="btn btn-danger right">Reject All</a>
+                <a href="{% url 'approve_all_advisors' %}" class="btn btn-success right">Approve All Advisors</a>
+                <a href="{% url 'reject_all_advisors' %}" class="btn btn-danger right">Reject All Advisors</a>
+                <a href="{% url 'approve_all_reviews' %}" class="btn btn-success right">Approve All Reviews</a>
+                <a href="{% url 'reject_all_reviews' %}" class="btn btn-danger right">Reject All Reviews</a>
                 </div>             
 
                 <div class="card-body">
@@ -146,8 +148,34 @@
                         </li>
                         {% endfor %}
                     </ul>
-    
                 </div>
+
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for advisor in advisors%}
+                        <li class="position-relative booking">
+                            <div class="media">
+                                <div class="media-body">
+                                    <h5 class="mb-4">{{advisor.ea_name}} <span class="badge badge-primary mx-3">{{advisor.created_by}}</span><span class="badge badge-danger"></span></h5>
+                                    <div class="mb-3">
+                                        <span class="mr-2 d-block d-sm-inline-block mb-2 mb-sm-0">Post date:</span>
+                                        <span class="bg-light-blue">{{advisor.last_updated}}</span>
+                                    </div>
+                                    <div class="mb-5">
+                                        <span class="mr-2 d-block d-sm-inline-block mb-1 mb-sm-0">Comment: {{advisor.personal_review}}</span>   <br>                                     
+                                        <span class="mr-2 d-block d-sm-inline-block mb-1 mb-sm-0">Category: {{advisor.category}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="buttons-to-right">
+                                <a href="{% url 'reject_advisor' advisor.id %}" class="btn-gray mr-2"><i class="far fa-times-circle mr-2"></i> Reject</a>
+                                <a href="{% url 'approve_advisor' advisor.id %}" class="btn-gray"><i class="far fa-check-circle mr-2"></i> Approve</a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
             </div>
     
         </div>

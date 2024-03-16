@@ -119,7 +119,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATIC_ROOT = "cyberfx"
-
+MEDIA_ROOT = "cyberfx\\media"
 STATICFILES_DIRS = [staticFilesDir]
 
 # Default primary key field type

@@ -11,32 +11,28 @@
     <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style-advisors.css' %}">
-    <title>Expert Advisor Reviews</title>
+    <title>Add New Advisor</title>
 
 <style>
 
-  #comment-input {
+  #review-input, #advisor-input {
     background-color: black; 
     color: white;      
   }
 
-  #comment-input::placeholder {
+  #review-input::placeholder, #advisor-input::placeholder {
     color: white;       
   }
   body {
     color: white;
   }
-  #comments, card-body, card {
-    background: #25252b;
-    color: #25252b;
-    background-color: #25252b;
-  }
+
 </style>
 </head>
 <body>
   <header class="container mt-4">       
     <div class="text-center">
-        <h1><a href="{% url 'advisors' %}"><img src="{% static 'images/back-button.png'%}" alt="" height="40px" width="30px"></a> Expert Advisor: <span id="ea-name">{{advisor.ea_name}}</span></h1> 
+        <h1><a href="{% url 'advisors' %}"><img src="{% static 'images/back-button.png'%}" alt="" height="40px" width="30px"></a> New Advisor: <span id="ea-name">{{advisor.ea_name}}</span></h1> 
     </div>
     <div class="">
     <p class="position-absolute top-0 end-0 m-1">Username: <span id="username">{{username}}</span></p> 
@@ -44,50 +40,38 @@
   </header>
 
 <section id="add-comment" class="container mt-4 text-center">
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
-  <input type="text" id="comment-input" name="comment" class="form-control" placeholder="Write your review here...">
-  <button type="submit" class="btn btn-dark mt-3 text-center">Submit Review</button> 
-  </form>
-</section>
-
-
-<section id="comments" class="container mt-4"> 
-    <h2>Reviews</h2>
-    {% for review in reviews|dictsortreversed:"posted_date" %}
-    <div class="border-left border-light" id="randomized"> 
-            <p class="text-muted mb-1">{{username}} | {{review.posted_date}}</p> 
-            <p>{{review.comment}}</p>
-    </div>
-    <br>
-    {% endfor %}
-    {% if advisor.personal_review %}
-    <div class="border-left border-light" id="randomized"> 
-          <p class="text-muted mb-1">{{advisor.created_by}} | {{advisor.last_updated}}</p> 
-          <p>{{advisor.personal_review}}</p>
-    {% endif %}      
+  <input type="text" id="advisor-input" name="advisor" class="form-control" placeholder="Advisor name...">
+  <textarea rows=10 id="review-input" name="review" class="form-control" placeholder="Write your review here..."></textarea>
+  <label for="images">Category:</label>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="category" id="Trash" value="Trash">
+    <label class="form-check-label" for="Trash">Trash</label>
   </div>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="category" id="Testing" value="Testing">
+    <label class="form-check-label" for="Testing">Testing</label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="category" id="Goodfornow" value="Goodfornow">
+    <label class="form-check-label" for="Goodfornow">Good for now</label>
+  </div>
+
+  <div class="form-group">
+    <label for="images">Images (Optional, Max 3 Images, 1 mb each):</label>
+    <input type="file" id="images" name="images" multiple accept="image/*">
+  </div>
+
+  <div class="form-group">
+    <label for="zip_file">Zip File (Optional, Max 1 zip file, 5 mb):</label>
+    <input type="file" id="zip_file" name="zip_file" accept=".zip">
+  </div>
+  <button type="submit" class="btn btn-dark mt-3 text-center">Submit</button> 
+  </form>
 </section>
 </body>
 
-<script>
-// Select the container
-const container = document.querySelectorAll("#randomized"); 
-
-// Select all the content elements inside the container (you'll need to adjust your selector here if necessary)
-
-// Function to generate a random margin
-function getRandomMargin() {
-  return Math.floor(Math.random() * 4) + 2; // Generates numbers between 2 and 5
-}
-console.log(container)
-
-container.forEach((container) => {
-  const randomMargin = getRandomMargin();
-  container.classList.add(`p-${randomMargin}`); 
-});
-
-</script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
