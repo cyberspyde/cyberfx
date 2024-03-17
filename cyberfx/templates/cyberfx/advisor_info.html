@@ -51,6 +51,16 @@
   </form>
 </section>
 
+<section class="container mt-4 text-center">
+<h1>Available Files:</h1>
+<ul>
+    {% for file in files %}
+        <li>
+            <a href="{% url 'download' filename=file %}">{{ file }}</a>
+        </li>
+    {% endfor %}
+</ul>
+</section>
 
 <section id="comments" class="container mt-4"> 
     <h2>Reviews</h2>
