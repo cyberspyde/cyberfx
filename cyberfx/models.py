@@ -18,6 +18,6 @@ class ExpertAdvisor(models.Model):
 class Review(models.Model):
     advisor = models.ForeignKey(ExpertAdvisor, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    comment = models.TextField()
+    comment = models.TextField(null=True, blank=True)
     approved = models.BooleanField(default=False)
     posted_date = models.DateTimeField(auto_now=True)

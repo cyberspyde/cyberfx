@@ -34,6 +34,13 @@
   .messages {
     color: black;
   }
+
+  /* Style for the textarea when it's visible */
+  #comment-input { 
+     opacity: 1;  
+     transition: opacity 0.5s ease-out; 
+  }
+  
 </style>
 </head>
 <body>
@@ -46,13 +53,21 @@
     </div>
   </header>
 
-{% if admin %}
 <section id="add-comment" class="container mt-4 text-center">
   <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
-  <input type="text" id="comment-input" name="comment" class="form-control" placeholder="Write your review here...">
-
+  <div class="form-check form-switch">
+    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" name="no_review">
+    <label class="form-check-label" for="flexSwitchCheckDefault">I have no review</label>
+  </div>
+  <textarea rows=5 id="comment-input" name="comment" class="form-control" placeholder="Write your review here..."></textarea>
+  
   <br>
+  
+  {% if admin %}
+  <input type="text" id="comment-input" name="link" class="form-control" placeholder="Add link...(optional)">
+  <br>
+  {% endif %}
   <div class="form-group">
     <label for="images">Images (Optional, Max 3 Images, 1 mb each):</label>
     <input type="file" id="images" name="images" multiple accept="image/*">
@@ -62,26 +77,28 @@
     <label for="zip_file">Zip File (Optional, Max 1 zip file, 5 mb):</label>
     <input type="file" id="zip_file" name="zip_file" accept=".zip">
   </div>
+  <button type="submit" class="btn btn-dark mt-3 text-center">Submit Review</button> 
+  </form>
+</section>
 
-  <button type="submit" class="btn btn-dark mt-3 text-center">Submit Review</button> 
-  </form>
-</section>
-{% else %}
-<section id="add-comment" class="container mt-4 text-center">
-  <form method="POST">
-  {% csrf_token %}
-  <input type="text" id="comment-input" name="comment" class="form-control" placeholder="Write your review here...">
-  <button type="submit" class="btn btn-dark mt-3 text-center">Submit Review</button> 
-  </form>
-</section>
-{% endif %}
+<section class="container mt-4 text-center">
+  <h1>Links:</h1>
+  <ul>
+      {% for link in links %}
+          <li>
+              <a href="{{link}}" target="_blank">{{ link }}</a>
+          </li>
+      {% endfor %}
+  </ul>
+  </section>
+
 
 <section class="container mt-4 text-center">
 <h1>Available Files:</h1>
 <ul>
-    {% for file in files %}
+    {% for file, creation_time in files %}
         <li>
-            <a href="{% url 'download' filename=file %}">{{ file }}</a>
+            <a href="{% url 'download' ea_name=clean_ea_name filename=file %}">{{ file }} - Created on {{creation_time}}</a>
         </li>
     {% endfor %}
 </ul>
@@ -182,6 +199,19 @@ window.addEventListener('DOMContentLoaded', () => {
         iosStyle(); // Call your JavaScript function
     }
 });
+
+$(document).ready(function() {
+  $('#flexSwitchCheckDefault').change(function() {
+      if (this.checked) { 
+          $('#comment-input').remove();  // Remove when checkbox is checked
+      } else {
+          // Re-insert the textarea if you want it to reappear
+          $('.form-check.form-switch').after('<textarea rows=5 id="comment-input" name="comment" class="form-control" placeholder="Write your review here..."></textarea>');
+      }
+  });
+});
+
+
 </script>
 
 </html>

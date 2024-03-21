@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.utils import timezone
-import os, re, subprocess
+import os, re, time
 from django.conf import settings
 from django.http import HttpResponse, Http404
 
@@ -102,71 +102,106 @@ def search_advisors(request):
 def advisor_info(request, id):
     advisor = ExpertAdvisor.objects.get(id=id)
     user = request.user
+    if user.is_superuser:
+        admin = True
+    else:
+        admin = False
     review_count = Review.objects.filter(
         advisor=advisor, user=request.user
     ).count()
+    clean_ea_name = clean_text(advisor.ea_name.lower())
+    ea_folder = os.path.join(uploads_base_dir, clean_ea_name)
+    if not os.path.exists(ea_folder):
+        os.makedirs(ea_folder)
+    if not os.path.exists(ea_folder + '/unverified-files'):
+        os.makedirs(ea_folder + '/unverified-files')
+    try:
+        upload_path = os.path.join("cyberfx/media/uploads/", clean_ea_name)
+        files_info = []
+        for f in os.listdir(upload_path):
+            full_path = os.path.join(upload_path, f)
+            if os.path.isfile(full_path):  # Check if it's a file
+                creation_time = os.path.getctime(full_path)
+                human_readable_time = time.ctime(creation_time)
+                files_info.append((f, human_readable_time))
 
-    if request.user.is_superuser:
-        if request.method == 'POST':
-            comment = request.POST['comment']
-            ea_name_filtered = clean_text(advisor.ea_name.lower())
-            ea_folder = os.path.join(uploads_base_dir, ea_name_filtered)
-            if not os.path.exists(ea_folder):
-                os.makedirs(ea_folder)
-            if comment == '':
-                messages.error(request, 'Please provide a review')
+        files_info.sort(key=lambda item: item[1], reverse=True)
+        files = files_info
+    except Exception as e:
+        print(e)
 
-            images = request.FILES.getlist('images')
-            if len(images) > 3:
-                messages.error(request, 'You can only upload a maximum of 3 images')
-            for image in images:
-                filename, extension = os.path.splitext(image.name.lower())
-                if extension[1:] not in ALLOWED_FORMATS:  
-                    messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
+    links = read_lines_from_file(upload_path + '/links.txt')
+    if request.method == 'POST':
+        if review_count >= 5:
+            messages.error(request, 'You have reached the maximum number of reviews for this advisor')
+            return redirect('advisor_info', id=id)
+        comment = request.POST.get('comment')
+        link = request.POST.get('link')
+        no_review = request.POST.get('no_review')
+        if comment == '':
+            messages.error(request, 'Please provide a review')
 
-                if image.size > MAX_IMAGE_SIZE:
-                    messages.error(request, 'Images cannot exceed 1MB each')
-                
-            zip_file = request.FILES.get('zip_file')
-            if zip_file:  
-                if not zip_file.name.endswith('.zip'):
-                    messages.error(request, 'Only .zip files are allowed')
+        print(no_review)
+        images = request.FILES.getlist('images')
+        if len(images) > 3:
+            messages.error(request, 'You can only upload a maximum of 3 images')
+        for image in images:
+            filename, extension = os.path.splitext(image.name.lower())
+            if extension[1:] not in ALLOWED_FORMATS:  
+                messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
 
-                if zip_file.size > MAX_ZIP_SIZE:
-                    messages.error(request, 'Zip file cannot exceed 5MB')
+            if image.size > MAX_IMAGE_SIZE:
+                messages.error(request, 'Images cannot exceed 1MB each')
+            
+        zip_file = request.FILES.get('zip_file')
+        if zip_file:  
+            if not zip_file.name.endswith('.zip'):
+                messages.error(request, 'Only .zip files are allowed')
 
-            if messages.get_messages(request):
-                return redirect('advisor_info', id=id)
+            if zip_file.size > MAX_ZIP_SIZE:
+                messages.error(request, 'Zip file cannot exceed 5MB')
 
+        if messages.get_messages(request):
+            return redirect('advisor_info', id=id)
+
+        if admin:
             for image in images:   
                 image_path = os.path.join(ea_folder, image.name)
                 with open(image_path, 'wb+') as destination:
                     for chunk in image.chunks():
                         destination.write(chunk)
-            if zip_file:
+        else:
+            for image in images:   
+                image_path = os.path.join(ea_folder + '/unverified-files', image.name)
+                with open(image_path, 'wb+') as destination:
+                    for chunk in image.chunks():
+                        destination.write(chunk)
+
+        if zip_file:
+            if admin:
                 zip_path = os.path.join(ea_folder, zip_file.name)
                 with open(zip_path, 'wb+') as destination:
                     for chunk in zip_file.chunks():
                         destination.write(chunk)
+            else:
+                zip_path = os.path.join(ea_folder + '/unverified-files', zip_file.name)
+                with open(zip_path, 'wb+') as destination:
+                    for chunk in zip_file.chunks():
+                        destination.write(chunk)
 
-
-            review = Review(advisor=advisor, user=user, comment=comment, approved=True)
-            review.save()    
-        review = Review.objects.filter(advisor=advisor, approved=True)
-        username = request.user.username
-        return render(request, 'cyberfx/advisor_info.html', {'advisor': advisor, 'reviews': review, 'username': username, 'admin' : True})
-    else:
-        if request.method == 'POST':
-            if review_count >= 5:
-                messages.error(request, 'You have reached the maximum number of reviews for this advisor')
-                return redirect('advisors')
-            comment = request.POST['comment']
+        if request.user.is_superuser:
+            add_link_to_file(upload_path + '/links.txt', link)
+            if not no_review:
+                review = Review(advisor=advisor, user=user, comment=comment, approved=True)
+                review.save()
+            return redirect('advisor_info', id=id)
+        else:
             review = Review(advisor=advisor, user=user, comment=comment, approved=False)
-            review.save()
-            return redirect('login_function')
-        review = Review.objects.filter(advisor=advisor, approved=True)
-        username = request.user.username
-        return render(request, 'cyberfx/advisor_info.html', {'advisor': advisor, 'reviews': review, 'username': username, 'admin' : False})
+            review.save()    
+            return redirect('advisor_info', id=id)
+    review = Review.objects.filter(advisor=advisor, approved=True)
+    username = request.user.username
+    return render(request, 'cyberfx/advisor_info.html', {'advisor': advisor, 'reviews': review, 'username': username, 'admin' : admin, 'files' : files, 'clean_ea_name' : clean_ea_name, 'links' : links})
 
 
 def login_function(request):
@@ -302,11 +337,37 @@ def add_advisor(request):
     else:
         return render(request, 'cyberfx/add_advisor.html', {'username' : request.user.username})
 
-def download(request, filename):
-    file_path = os.path.join(settings.MEDIA_ROOT, filename)
+
+def download(request, ea_name, filename):
+    file_path = settings.MEDIA_ROOT + "/uploads/" + ea_name + "/" + filename
+    print(file_path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="application/force-download")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
     raise Http404
+
+
+def add_link_to_file(filename, link):
+    if link == '':
+        print('No link provided')
+        return
+    if not os.path.exists(filename):
+        with open(filename, 'w') as file:
+            file.write("CyberFX Project - https://cyberspyde.com/cyberfx" + '\n')
+    with open(filename, 'r+') as file:
+        existing_links = file.readlines()
+        file.seek(0) 
+        file.write(link + '\n')  
+        file.writelines(existing_links) 
+        file.truncate()  
+    print('Link added to file')
+    
+def read_lines_from_file(filename):
+    if not os.path.exists(filename):
+        with open(filename, 'w') as file:
+            file.write("CyberFX Project - https://cyberspyde.com/cyberfx" + '\n')
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+    return lines 

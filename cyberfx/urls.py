@@ -19,5 +19,5 @@ urlpatterns = [
     path('cyberfx/approve-advisor/<int:id>', views.approve_advisor, name='approve_advisor'),
     path('cyberfx/reject-advisor/<int:id>', views.reject_advisor, name='reject_advisor'),
     path('cyberfx/add-advisor/', views.add_advisor, name='add_advisor'),
-    path('cyberfx/download/<str:filename>/', views.download, name='download')
+    path('cyberfx/download/<str:ea_name>/<str:filename>/', views.download, name='download')
 ]
