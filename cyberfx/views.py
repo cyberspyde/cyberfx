@@ -6,9 +6,55 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.utils import timezone
-import os, re
+import os, re, subprocess
 from django.conf import settings
 from django.http import HttpResponse, Http404
+
+uploads_base_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+MAX_IMAGE_SIZE = 1 * 1024 * 1024  # 1 MB
+ALLOWED_FORMATS = ('png', 'jpeg', 'jpg', 'bmp', 'heic', 'heif')
+MAX_ZIP_SIZE = 5 * 1024 * 1024  # 5 MB
+
+def handle_images(request, ea_folder):
+        images = request.FILES.getlist('images')
+        if len(images) > 3:
+            messages.error(request, 'You can only upload a maximum of 3 images')
+            if id is not None:
+                return 'error'
+            else:
+                return 'error'
+
+        for image in images:
+            if image.size > MAX_IMAGE_SIZE:
+                messages.error(request, 'Images cannot exceed 1MB each')
+                return 'error'
+            
+        for image in images:
+            filename, extension = os.path.splitext(image.name.lower())
+            if extension[1:] not in ALLOWED_FORMATS:  
+                messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
+                return 'error' 
+
+            image_path = os.path.join(ea_folder, image.name)
+            with open(image_path, 'wb+') as destination:
+                for chunk in image.chunks():
+                    destination.write(chunk)
+
+def handle_zip(request, ea_folder):
+        zip_file = request.FILES.get('zip_file')
+        if zip_file:  
+            if not zip_file.name.endswith('.zip'):
+                messages.error(request, 'Only .zip files are allowed')
+                return 'error'
+
+            if zip_file.size > MAX_ZIP_SIZE:
+                messages.error(request, 'Zip file cannot exceed 5MB')
+                return 'error'
+
+            zip_path = os.path.join(ea_folder, zip_file.name)
+            with open(zip_path, 'wb+') as destination:
+                for chunk in zip_file.chunks():
+                    destination.write(chunk)
 
 def clean_text(text, replace_with=''):
     return re.sub(r"[^\w\s]|\s+", replace_with, text).strip() 
@@ -27,9 +73,8 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('login_function')  # Redirect to a success page
+            return redirect('login_function')
         else:
-            # Handle invalid login
             messages.error(request, 'Invalid username or password')
             return redirect('login')
     else:
@@ -61,26 +106,68 @@ def advisor_info(request, id):
         advisor=advisor, user=request.user
     ).count()
 
-    if request.user.is_authenticated:
-        if request.user.is_superuser:
-            if request.method == 'POST':
-                user = request.user
-                comment = request.POST['comment']
-                review = Review(advisor=advisor, user=user, comment=comment, approved=True)
-                review.save()
-        else:
-            if request.method == 'POST':
-                if review_count >= 5:
-                    messages.error(request, 'You have reached the maximum number of reviews for this advisor')
-                    return redirect('advisors')
-                comment = request.POST['comment']
-                review = Review(advisor=advisor, user=user, comment=comment, approved=False)
-                review.save()
-                return redirect('login_function')
-    
-    review = Review.objects.filter(advisor=advisor, approved=True)
-    username = request.user.username
-    return render(request, 'cyberfx/advisor_info.html', {'advisor': advisor, 'reviews': review, 'username': username})
+    if request.user.is_superuser:
+        if request.method == 'POST':
+            comment = request.POST['comment']
+            ea_name_filtered = clean_text(advisor.ea_name.lower())
+            ea_folder = os.path.join(uploads_base_dir, ea_name_filtered)
+            if not os.path.exists(ea_folder):
+                os.makedirs(ea_folder)
+            if comment == '':
+                messages.error(request, 'Please provide a review')
+
+            images = request.FILES.getlist('images')
+            if len(images) > 3:
+                messages.error(request, 'You can only upload a maximum of 3 images')
+            for image in images:
+                filename, extension = os.path.splitext(image.name.lower())
+                if extension[1:] not in ALLOWED_FORMATS:  
+                    messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
+
+                if image.size > MAX_IMAGE_SIZE:
+                    messages.error(request, 'Images cannot exceed 1MB each')
+                
+            zip_file = request.FILES.get('zip_file')
+            if zip_file:  
+                if not zip_file.name.endswith('.zip'):
+                    messages.error(request, 'Only .zip files are allowed')
+
+                if zip_file.size > MAX_ZIP_SIZE:
+                    messages.error(request, 'Zip file cannot exceed 5MB')
+
+            if messages.get_messages(request):
+                return redirect('advisor_info', id=id)
+
+            for image in images:   
+                image_path = os.path.join(ea_folder, image.name)
+                with open(image_path, 'wb+') as destination:
+                    for chunk in image.chunks():
+                        destination.write(chunk)
+            if zip_file:
+                zip_path = os.path.join(ea_folder, zip_file.name)
+                with open(zip_path, 'wb+') as destination:
+                    for chunk in zip_file.chunks():
+                        destination.write(chunk)
+
+
+            review = Review(advisor=advisor, user=user, comment=comment, approved=True)
+            review.save()    
+        review = Review.objects.filter(advisor=advisor, approved=True)
+        username = request.user.username
+        return render(request, 'cyberfx/advisor_info.html', {'advisor': advisor, 'reviews': review, 'username': username, 'admin' : True})
+    else:
+        if request.method == 'POST':
+            if review_count >= 5:
+                messages.error(request, 'You have reached the maximum number of reviews for this advisor')
+                return redirect('advisors')
+            comment = request.POST['comment']
+            review = Review(advisor=advisor, user=user, comment=comment, approved=False)
+            review.save()
+            return redirect('login_function')
+        review = Review.objects.filter(advisor=advisor, approved=True)
+        username = request.user.username
+        return render(request, 'cyberfx/advisor_info.html', {'advisor': advisor, 'reviews': review, 'username': username, 'admin' : False})
+
 
 def login_function(request):
     if request.user.is_authenticated:
@@ -160,53 +247,49 @@ def add_advisor(request):
         if personal_review == '':
             messages.error(request, 'Please provide a review')
             return redirect('add_advisor')
-        if len(images) > 3:
-            messages.error(request, 'You can only upload a maximum of 3 images')
-            return redirect('add_advisor')
-
-        MAX_IMAGE_SIZE = 1 * 1024 * 1024  # 1 MB
-        ALLOWED_FORMATS = ('png', 'jpeg', 'jpg', 'bmp', 'heic', 'heif')  # Add HEIC variations
-
-        for image in images:
-            if image.size > MAX_IMAGE_SIZE:
-                messages.error(request, 'Images cannot exceed 1MB each')
-                return redirect('add_advisor')
-
-        uploads_base_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
 
         ea_folder = os.path.join(uploads_base_dir, ea_name_filtered)
+        print(ea_folder)
         if not os.path.exists(ea_folder):
-            os.makedirs(ea_folder)  # Create the folder if needed
+            os.makedirs(ea_folder)
 
-        # Handle images
-        for image in request.FILES.getlist('images'):
-            filename, extension = os.path.splitext(image.name.lower())
-            if extension[1:] not in ALLOWED_FORMATS:  
-                messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
-                return redirect('add_advisor')  
-
-            image_path = os.path.join(ea_folder, image.name)
-            with open(image_path, 'wb+') as destination:
-                for chunk in image.chunks():
-                    destination.write(chunk)
-
-        # Process uploaded zip file (max 1)
-        zip_file = request.FILES.get('zip_file')
-        if zip_file:  
-            if not zip_file.name.endswith('.zip'):
-                messages.error(request, 'Only .zip files are allowed')
+            # Handle Images
+            images = request.FILES.getlist('images')
+            if len(images) > 3:
+                messages.error(request, 'You can only upload a maximum of 3 images')
                 return redirect('add_advisor')
 
-            # Size validation (in bytes)
-            MAX_ZIP_SIZE = 5 * 1024 * 1024  # 5 MB
-            if zip_file.size > MAX_ZIP_SIZE:
-                messages.error(request, 'Zip file cannot exceed 5MB')
-                return redirect('add_advisor')
+            for image in images:
+                if image.size > MAX_IMAGE_SIZE:
+                    messages.error(request, 'Images cannot exceed 1MB each')
+                    return redirect('add_advisor')
+                
+            for image in images:
+                filename, extension = os.path.splitext(image.name.lower())
+                if extension[1:] not in ALLOWED_FORMATS:  
+                    messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
+                    return redirect('add_advisor') 
 
-            zip_path = os.path.join(ea_folder, zip_file.name)
-            with open(zip_path, 'wb+') as destination:
-                for chunk in zip_file.chunks():
-                    destination.write(chunk)
+                image_path = os.path.join(ea_folder, image.name)
+                with open(image_path, 'wb+') as destination:
+                    for chunk in image.chunks():
+                        destination.write(chunk)
+
+            # Handle Zip file
+            zip_file = request.FILES.get('zip_file')
+            if zip_file:  
+                if not zip_file.name.endswith('.zip'):
+                    messages.error(request, 'Only .zip files are allowed')
+                    return redirect('add_advisor')
+
+                if zip_file.size > MAX_ZIP_SIZE:
+                    messages.error(request, 'Zip file cannot exceed 5MB')
+                    return redirect('add_advisor')
+
+                zip_path = os.path.join(ea_folder, zip_file.name)
+                with open(zip_path, 'wb+') as destination:
+                    for chunk in zip_file.chunks():
+                        destination.write(chunk)
 
         if request.user.is_superuser:
             advisor = ExpertAdvisor(ea_name=ea_name, personal_review=personal_review, category=category, created_by=created_by, approved=True)
