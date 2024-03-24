@@ -35,7 +35,7 @@ def handle_images(request, ea_folder):
                 messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
                 return 'error' 
 
-            image_path = os.path.join(ea_folder, image.name)
+            image_path = os.path.join(ea_folder, clean_text(image.name))
             with open(image_path, 'wb+') as destination:
                 for chunk in image.chunks():
                     destination.write(chunk)
@@ -51,13 +51,17 @@ def handle_zip(request, ea_folder):
                 messages.error(request, 'Zip file cannot exceed 5MB')
                 return 'error'
 
-            zip_path = os.path.join(ea_folder, zip_file.name)
+            zip_path = os.path.join(ea_folder, clean_text(zip_file.name))
             with open(zip_path, 'wb+') as destination:
                 for chunk in zip_file.chunks():
                     destination.write(chunk)
 
 def clean_text(text, replace_with=''):
-    return re.sub(r"[^\w\s]|\s+", replace_with, text).strip() 
+    answer = re.sub(r"[^\w\s]|\s+", replace_with, text).strip()
+    return answer.lower()
+
+def save_clean_file(text):
+    return text.replace(' ', '_').lower()
 
 def index(request):
     return render(request, 'cyberfx/index.html')
@@ -109,14 +113,14 @@ def advisor_info(request, id):
     review_count = Review.objects.filter(
         advisor=advisor, user=request.user
     ).count()
-    clean_ea_name = clean_text(advisor.ea_name.lower())
+    clean_ea_name = clean_text(advisor.ea_name)
     ea_folder = os.path.join(uploads_base_dir, clean_ea_name)
     if not os.path.exists(ea_folder):
         os.makedirs(ea_folder)
     if not os.path.exists(ea_folder + '/unverified-files'):
         os.makedirs(ea_folder + '/unverified-files')
     try:
-        upload_path = os.path.join("cyberfx/media/uploads/", clean_ea_name)
+        upload_path = os.path.join(settings.MEDIA_ROOT + 'uploads/', clean_ea_name)
         files_info = []
         for f in os.listdir(upload_path):
             full_path = os.path.join(upload_path, f)
@@ -166,25 +170,25 @@ def advisor_info(request, id):
 
         if admin:
             for image in images:   
-                image_path = os.path.join(ea_folder, image.name)
+                image_path = os.path.join(ea_folder, save_clean_file(image.name))
                 with open(image_path, 'wb+') as destination:
                     for chunk in image.chunks():
                         destination.write(chunk)
         else:
             for image in images:   
-                image_path = os.path.join(ea_folder + '/unverified-files', image.name)
+                image_path = os.path.join(ea_folder + '/unverified-files', save_clean_file(image.name))
                 with open(image_path, 'wb+') as destination:
                     for chunk in image.chunks():
                         destination.write(chunk)
 
         if zip_file:
             if admin:
-                zip_path = os.path.join(ea_folder, zip_file.name)
+                zip_path = os.path.join(ea_folder, save_clean_file(zip_file.name))
                 with open(zip_path, 'wb+') as destination:
                     for chunk in zip_file.chunks():
                         destination.write(chunk)
             else:
-                zip_path = os.path.join(ea_folder + '/unverified-files', zip_file.name)
+                zip_path = os.path.join(ea_folder + '/unverified-files', save_clean_file(zip_file.name))
                 with open(zip_path, 'wb+') as destination:
                     for chunk in zip_file.chunks():
                         destination.write(chunk)
@@ -274,7 +278,7 @@ def reject_all_reviews(request):
 def add_advisor(request):
     if request.method == 'POST':
         ea_name = request.POST['advisor']
-        ea_name_filtered = clean_text(ea_name.lower())
+        ea_name_filtered = clean_text(ea_name)
         category = request.POST['category']
         personal_review = request.POST['review']
         created_by = request.user
