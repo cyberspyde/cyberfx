@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect
 from .models import ExpertAdvisor, Review
-from django.db.models import Q
+from django.db.models import Q, Max, Case, When, F, TextField
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.utils import timezone
-import os, re, time
+import os, re, time, csv
 from django.conf import settings
 from django.http import HttpResponse, Http404
+from django.shortcuts import get_object_or_404
+
 
 uploads_base_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
 MAX_IMAGE_SIZE = 1 * 1024 * 1024  # 1 MB
@@ -85,7 +87,16 @@ def login_view(request):
         return render(request, 'cyberfx/login.html')
 
 def advisors(request):
-    advisors = ExpertAdvisor.objects.filter(approved=True).exclude(personal_review='').order_by('-last_updated')
+    #advisors = ExpertAdvisor.objects.filter(approved=True).exclude(personal_review='').order_by('-last_updated')
+    #reviews = Review.objects.select_related('advisor', 'user')
+    advisors = ExpertAdvisor.objects.annotate(
+    latest_review_date=Max('review__posted_date'),
+    display_text=Case(
+        When(latest_review_date__isnull=True, then='personal_review'),
+        default=F('review__comment'), 
+        output_field=TextField()
+    )
+)
     return render(request, 'cyberfx/advisor_list.html', {'advisors' : advisors})
 
 def search_category(request, category):
@@ -102,9 +113,22 @@ def search_advisors(request):
     data = list(results.values('id', 'ea_name', 'personal_review', 'last_updated', 'category')) 
     return JsonResponse(data, safe=False) 
 
+# from django.core.paginator import Paginator
+
+# def search_advisors(request):
+#     search_term = request.GET.get('term', '')
+#     results = ExpertAdvisor.objects.filter(
+#         Q(ea_name__icontains=search_term)
+#     )
+#     paginator = Paginator(results, 10) # Show 10 results per page
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+#     data = list(page_obj.object_list.values('id', 'ea_name', 'personal_review', 'last_updated', 'category'))
+#     return JsonResponse(data, safe=False)
+
 @login_required
 def advisor_info(request, id):
-    advisor = ExpertAdvisor.objects.get(id=id)
+    advisor = get_object_or_404(ExpertAdvisor, id=id)
     user = request.user
     if user.is_superuser:
         admin = True
