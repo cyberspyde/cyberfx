@@ -333,7 +333,7 @@ def add_advisor(request):
                     messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
                     return redirect('add_advisor') 
 
-                image_path = os.path.join(ea_folder, image.name)
+                image_path = os.path.join(ea_folder, save_clean_file(image.name))
                 with open(image_path, 'wb+') as destination:
                     for chunk in image.chunks():
                         destination.write(chunk)
@@ -349,7 +349,7 @@ def add_advisor(request):
                     messages.error(request, 'Zip file cannot exceed 5MB')
                     return redirect('add_advisor')
 
-                zip_path = os.path.join(ea_folder, zip_file.name)
+                zip_path = os.path.join(ea_folder, save_clean_file(zip_file.name))
                 with open(zip_path, 'wb+') as destination:
                     for chunk in zip_file.chunks():
                         destination.write(chunk)
