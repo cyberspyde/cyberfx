@@ -87,17 +87,10 @@ def login_view(request):
         return render(request, 'cyberfx/login.html')
 
 def advisors(request):
-    #advisors = ExpertAdvisor.objects.filter(approved=True).exclude(personal_review='').order_by('-last_updated')
-    #reviews = Review.objects.select_related('advisor', 'user')
-    advisors = ExpertAdvisor.objects.annotate(
-    latest_review_date=Max('review__posted_date'),
-    display_text=Case(
-        When(latest_review_date__isnull=True, then='personal_review'),
-        default=F('review__comment'), 
-        output_field=TextField()
-    )
-)
-    return render(request, 'cyberfx/advisor_list.html', {'advisors' : advisors})
+    advisors = ExpertAdvisor.objects.filter(approved=True).exclude(personal_review='').order_by('-last_updated')
+    reviews = Review.objects.select_related('advisor', 'user')
+    print(reviews)
+    return render(request, 'cyberfx/advisor_list.html', {'advisors' : advisors, 'reviews' : reviews})
 
 def search_category(request, category):
     advisors = ExpertAdvisor.objects.filter(category=category, approved=True).exclude(personal_review='').order_by('-last_updated')
@@ -220,6 +213,9 @@ def advisor_info(request, id):
         if request.user.is_superuser:
             add_link_to_file(upload_path + '/links.txt', link)
             if not no_review:
+                last_updated = timezone.now()
+                advisor.last_updated = last_updated
+                advisor.save()
                 review = Review(advisor=advisor, user=user, comment=comment, approved=True)
                 review.save()
             return redirect('advisor_info', id=id)

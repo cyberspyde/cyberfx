@@ -3,7 +3,7 @@ from .models import ExpertAdvisor, Review
 
 #design admin panel
 class ExpertAdvisorAdmin(admin.ModelAdmin):
-    list_display = ('ea_name', 'category', 'approved')
+    list_display = ('ea_name', 'category', 'approved', 'last_updated')
     list_filter = ('category', 'approved')
     search_fields = ('ea_name', 'personal_review')
 

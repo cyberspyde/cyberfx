@@ -92,8 +92,13 @@
             <a href="{% url 'advisor_info' item.id %}"><u>{{item.ea_name}}</u></a>
           </td>
           <td>
-            {{item.display_text}}
-        
+            {% for review in reviews|dictsortreversed:"posted_date" %}
+              {% if review.advisor_id == item.id %}
+                {{review.comment}} | 
+              {% endif %}
+            {% endfor %}
+
+            {{item.personal_review}}
           </td>
           <td>
             {{item.last_updated}}
