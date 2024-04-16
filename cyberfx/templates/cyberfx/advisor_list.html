@@ -92,13 +92,12 @@
             <a href="{% url 'advisor_info' item.id %}"><u>{{item.ea_name}}</u></a>
           </td>
           <td>
-            {% for review in reviews|dictsortreversed:"posted_date" %}
-              {% if review.advisor_id == item.id %}
-                {{review.comment}} | 
-              {% endif %}
-            {% endfor %}
-
-            {{item.personal_review}}
+          {% for review in reviews|dictsortreversed:"posted_date" %}
+            {% if review.advisor_id == item.id %}
+              {{review.comment}} | 
+            {% endif %}
+          {% endfor %}
+          {{item.personal_review}}
           </td>
           <td>
             {{item.last_updated}}
@@ -176,6 +175,7 @@
                         <a href="https://cyberspyde.com/cyberfx/advisor-info/${advisor.id}">${advisor.ea_name}</a>
                         </td>
                         <td>
+                        ${advisor.comments} |
                         ${advisor.personal_review}
                         </td>
                         <td>
@@ -217,6 +217,7 @@ document.getElementById('livesearch').addEventListener('keyup', (e) => {
               <a href="https://cyberspyde.com/cyberfx/advisor-info/${advisor.id}">${advisor.ea_name}</a>
               </td>
               <td>
+              ${advisor.comments} | 
               ${advisor.personal_review}
               </td>
               <td>
@@ -232,6 +233,7 @@ document.getElementById('livesearch').addEventListener('keyup', (e) => {
   });
 
 }, 500);
+
 </script>
 
 <script>

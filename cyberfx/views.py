@@ -1,16 +1,15 @@
 from django.shortcuts import render, redirect
 from .models import ExpertAdvisor, Review
-from django.db.models import Q, Max, Case, When, F, TextField
+from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.utils import timezone
-import os, re, time, csv
+import os, re, time
 from django.conf import settings
 from django.http import HttpResponse, Http404
-from django.shortcuts import get_object_or_404
-
+from urllib.parse import quote_plus
 
 uploads_base_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
 MAX_IMAGE_SIZE = 1 * 1024 * 1024  # 1 MB
@@ -37,7 +36,7 @@ def handle_images(request, ea_folder):
                 messages.error(request, 'Only .png, .jpeg, .jpg, .bmp, .heic, .heif files are allowed')
                 return 'error' 
 
-            image_path = os.path.join(ea_folder, clean_text(image.name))
+            image_path = os.path.join(ea_folder, save_clean_file(image.name))
             with open(image_path, 'wb+') as destination:
                 for chunk in image.chunks():
                     destination.write(chunk)
@@ -53,7 +52,7 @@ def handle_zip(request, ea_folder):
                 messages.error(request, 'Zip file cannot exceed 5MB')
                 return 'error'
 
-            zip_path = os.path.join(ea_folder, clean_text(zip_file.name))
+            zip_path = os.path.join(ea_folder, save_clean_file(zip_file.name))
             with open(zip_path, 'wb+') as destination:
                 for chunk in zip_file.chunks():
                     destination.write(chunk)
@@ -89,12 +88,17 @@ def login_view(request):
 def advisors(request):
     advisors = ExpertAdvisor.objects.filter(approved=True).exclude(personal_review='').order_by('-last_updated')
     reviews = Review.objects.select_related('advisor', 'user')
-    print(reviews)
     return render(request, 'cyberfx/advisor_list.html', {'advisors' : advisors, 'reviews' : reviews})
 
 def search_category(request, category):
     advisors = ExpertAdvisor.objects.filter(category=category, approved=True).exclude(personal_review='').order_by('-last_updated')
     results = list(advisors.values('id', 'ea_name', 'personal_review', 'last_updated', 'category'))  
+
+    for item in results:
+        advisor_id = item['id']
+        reviews = Review.objects.filter(advisor_id=advisor_id)
+        comments = [review.comment for review in reviews]
+        item['comments'] = comments
     return JsonResponse(results, safe=False)
 
 def search_advisors(request):
@@ -104,24 +108,17 @@ def search_advisors(request):
     ) 
     results = results[:10] 
     data = list(results.values('id', 'ea_name', 'personal_review', 'last_updated', 'category')) 
+
+    for item in data:
+        advisor_id = item['id']
+        reviews = Review.objects.filter(advisor_id=advisor_id)
+        comments = [review.comment for review in reviews]
+        item['comments'] = comments
     return JsonResponse(data, safe=False) 
-
-# from django.core.paginator import Paginator
-
-# def search_advisors(request):
-#     search_term = request.GET.get('term', '')
-#     results = ExpertAdvisor.objects.filter(
-#         Q(ea_name__icontains=search_term)
-#     )
-#     paginator = Paginator(results, 10) # Show 10 results per page
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-#     data = list(page_obj.object_list.values('id', 'ea_name', 'personal_review', 'last_updated', 'category'))
-#     return JsonResponse(data, safe=False)
 
 @login_required
 def advisor_info(request, id):
-    advisor = get_object_or_404(ExpertAdvisor, id=id)
+    advisor = ExpertAdvisor.objects.get(id=id)
     user = request.user
     if user.is_superuser:
         admin = True
@@ -137,7 +134,7 @@ def advisor_info(request, id):
     if not os.path.exists(ea_folder + '/unverified-files'):
         os.makedirs(ea_folder + '/unverified-files')
     try:
-        upload_path = os.path.join(settings.MEDIA_ROOT + 'uploads/', clean_ea_name)
+        upload_path = os.path.join(settings.MEDIA_ROOT + "uploads/", clean_ea_name)
         files_info = []
         for f in os.listdir(upload_path):
             full_path = os.path.join(upload_path, f)
@@ -363,12 +360,12 @@ def add_advisor(request):
 
 
 def download(request, ea_name, filename):
-    file_path = settings.MEDIA_ROOT + "/uploads/" + ea_name + "/" + filename
-    print(file_path)
+    file_path = settings.MEDIA_ROOT + "uploads/" + ea_name + "/" + filename
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="application/force-download")
-            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            encoded_filename = quote_plus(filename)  # Encode the filename
+            response['Content-Disposition'] = 'inline; filename*=UTF-8\'\'%s' % encoded_filename 
             return response
     raise Http404
 
